@@ -1,4 +1,13 @@
-import { Geist, Geist_Mono, Instrument_Sans, Manrope } from "next/font/google"
+import {
+  Geist,
+  Geist_Mono,
+  Instrument_Sans,
+  Inter_Tight,
+  Manrope,
+  Plus_Jakarta_Sans,
+  Space_Mono,
+} from "next/font/google"
+import localFont from "next/font/local"
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -21,6 +30,29 @@ const instrumentSans = Instrument_Sans({
   variable: "--font-instrument-sans",
 })
 
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta",
+})
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  variable: "--font-inter-tight",
+})
+
+const spaceMono = Space_Mono({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-space-mono",
+})
+
+const satoshi = localFont({
+  src: "../fonts/satoshi-regular.woff2",
+  weight: "400",
+  display: "swap",
+  variable: "--font-satoshi",
+})
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,7 +68,11 @@ export default function RootLayout({
         "font-sans",
         geist.variable,
         manrope.variable,
-        instrumentSans.variable
+        instrumentSans.variable,
+        plusJakartaSans.variable,
+        interTight.variable,
+        spaceMono.variable,
+        satoshi.variable
       )}
     >
       <body>
