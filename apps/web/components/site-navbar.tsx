@@ -14,6 +14,7 @@ import {
   SheetTrigger,
 } from "@workspace/ui/components/sheet"
 import { cn } from "@workspace/ui/lib/utils"
+import { authClient, useSession } from "@/lib/auth-client"
 
 const navLinks = [
   { label: "Browse Jobs", href: "#browse-jobs" },
@@ -23,6 +24,7 @@ const navLinks = [
 
 export function SiteNavbar() {
   const [menuOpen, setMenuOpen] = React.useState(false)
+  const { data: session } = useSession()
 
   return (
     <header className="sticky top-0 z-40 w-full px-6 pt-6">
@@ -64,24 +66,41 @@ export function SiteNavbar() {
           />
 
           <div className="flex items-center gap-4">
-            <Link
-              href="#sign-in"
-              className={cn(
-                buttonVariants({ variant: "ghost" }),
-                "h-[58px] rounded-[12px] px-6 [font-family:var(--font-manrope)] text-[18px] font-semibold text-[#5c53fe] shadow-[inset_0_3px_10px_rgba(255,255,255,0.2)] hover:bg-white/5 hover:text-[#5c53fe]"
-              )}
-            >
-              Sign In
-            </Link>
-            <Link
-              href="#get-started"
-              className={cn(
-                buttonVariants(),
-                "h-[52px] rounded-[12px] border-[#090a15]/10 bg-[#5c53fe] px-6 [font-family:var(--font-instrument-sans)] text-[18px] font-medium tracking-[-0.2px] text-white shadow-[inset_0_3px_10px_rgba(255,255,255,0.2)] hover:bg-[#4f47e8]"
-              )}
-            >
-              Get Started
-            </Link>
+            {session?.user ? (
+              <React.Fragment>
+                <span className="max-w-48 truncate text-sm text-white/80">
+                  Welcome, {session.user.name || session.user.email}
+                </span>
+                <Button
+                  variant="ghost"
+                  onClick={() => void authClient.signOut()}
+                  className="h-[52px] rounded-[12px] px-5 text-white hover:bg-white/10 hover:text-white"
+                >
+                  Sign Out
+                </Button>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Link
+                  href="/sign-in"
+                  className={cn(
+                    buttonVariants({ variant: "ghost" }),
+                    "h-[58px] rounded-[12px] px-6 [font-family:var(--font-manrope)] text-[18px] font-semibold text-[#5c53fe] shadow-[inset_0_3px_10px_rgba(255,255,255,0.2)] hover:bg-white/5 hover:text-[#5c53fe]"
+                  )}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className={cn(
+                    buttonVariants(),
+                    "h-[52px] rounded-[12px] border-[#090a15]/10 bg-[#5c53fe] px-6 [font-family:var(--font-instrument-sans)] text-[18px] font-medium tracking-[-0.2px] text-white shadow-[inset_0_3px_10px_rgba(255,255,255,0.2)] hover:bg-[#4f47e8]"
+                  )}
+                >
+                  Get Started
+                </Link>
+              </React.Fragment>
+            )}
           </div>
         </div>
 
@@ -127,26 +146,46 @@ export function SiteNavbar() {
               />
 
               <div className="flex flex-col gap-3">
-                <Link
-                  href="#sign-in"
-                  onClick={() => setMenuOpen(false)}
-                  className={cn(
-                    buttonVariants({ variant: "ghost" }),
-                    "h-[58px] justify-start rounded-[12px] px-6 [font-family:var(--font-manrope)] text-[18px] font-semibold text-[#5c53fe] shadow-[inset_0_3px_10px_rgba(255,255,255,0.2)] hover:bg-white/5 hover:text-[#5c53fe]"
-                  )}
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="#get-started"
-                  onClick={() => setMenuOpen(false)}
-                  className={cn(
-                    buttonVariants(),
-                    "h-[52px] rounded-[12px] border-[#090a15]/10 bg-[#5c53fe] px-6 [font-family:var(--font-instrument-sans)] text-[18px] font-medium tracking-[-0.2px] text-white shadow-[inset_0_3px_10px_rgba(255,255,255,0.2)] hover:bg-[#4f47e8]"
-                  )}
-                >
-                  Get Started
-                </Link>
+                {session?.user ? (
+                  <React.Fragment>
+                    <span className="px-2 text-sm text-white/80">
+                      {session.user.name || session.user.email}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setMenuOpen(false)
+                        void authClient.signOut()
+                      }}
+                      className="h-[52px] justify-start rounded-[12px] px-6 text-white hover:bg-white/10 hover:text-white"
+                    >
+                      Sign Out
+                    </Button>
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    <Link
+                      href="/sign-in"
+                      onClick={() => setMenuOpen(false)}
+                      className={cn(
+                        buttonVariants({ variant: "ghost" }),
+                        "h-[58px] justify-start rounded-[12px] px-6 [font-family:var(--font-manrope)] text-[18px] font-semibold text-[#5c53fe] shadow-[inset_0_3px_10px_rgba(255,255,255,0.2)] hover:bg-white/5 hover:text-[#5c53fe]"
+                      )}
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/sign-up"
+                      onClick={() => setMenuOpen(false)}
+                      className={cn(
+                        buttonVariants(),
+                        "h-[52px] rounded-[12px] border-[#090a15]/10 bg-[#5c53fe] px-6 [font-family:var(--font-instrument-sans)] text-[18px] font-medium tracking-[-0.2px] text-white shadow-[inset_0_3px_10px_rgba(255,255,255,0.2)] hover:bg-[#4f47e8]"
+                      )}
+                    >
+                      Get Started
+                    </Link>
+                  </React.Fragment>
+                )}
               </div>
             </div>
           </SheetContent>

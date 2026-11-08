@@ -57,18 +57,24 @@ export default function SignUpPage() {
           statusText: authError.statusText,
           message: authError.message,
         })
-        setError(authError.message || "Unable to create your account. Please try again.")
+        setError(
+          authError.message ||
+            "Unable to create your account. Please try again."
+        )
       } else {
         console.log("Sign-up data:", {
           user: data?.user,
           token: data?.token,
         })
+        window.location.assign("/")
       }
     } catch (cause) {
       console.error("Sign-up request failed:", cause)
-      setError(cause instanceof Error && cause.message
-        ? cause.message
-        : "Unable to create your account. Please try again.")
+      setError(
+        cause instanceof Error && cause.message
+          ? cause.message
+          : "Unable to create your account. Please try again."
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -113,8 +119,16 @@ export default function SignUpPage() {
               </legend>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { value: "seeker", label: "Job Seeker", Icon: UsersRoundIcon },
-                  { value: "recruiter", label: "Recruiter", Icon: UserRoundIcon },
+                  {
+                    value: "seeker",
+                    label: "Job Seeker",
+                    Icon: UsersRoundIcon,
+                  },
+                  {
+                    value: "recruiter",
+                    label: "Recruiter",
+                    Icon: UserRoundIcon,
+                  },
                   { value: "admin", label: "Admin", Icon: ShieldCheckIcon },
                 ].map(({ value, label, Icon }) => (
                   <label key={value} className="cursor-pointer">
@@ -126,7 +140,7 @@ export default function SignUpPage() {
                       required
                       className="peer sr-only"
                     />
-                    <span className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 p-3 text-center text-sm font-semibold text-white/70 transition hover:bg-white/10 peer-checked:border-[#5c53fe] peer-checked:bg-[#5c53fe]/25 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-[#5c53fe]">
+                    <span className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 p-3 text-center text-sm font-semibold text-white/70 transition peer-checked:border-[#5c53fe] peer-checked:bg-[#5c53fe]/25 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-[#5c53fe] hover:bg-white/10">
                       <Icon aria-hidden="true" className="size-6" />
                       {label}
                     </span>
