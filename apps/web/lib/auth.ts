@@ -17,8 +17,13 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
-      userKey: {
+      accountType: {
         type: "string",
+        required: true,
+        defaultValue: "seeker",
+      },
+      userKey: {
+        type: ['seeker','recuiter','admin'],
         required: true,
         input: false,
         returned: false,

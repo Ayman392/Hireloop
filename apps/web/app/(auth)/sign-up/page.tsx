@@ -2,7 +2,16 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { EyeIcon, EyeOffIcon, LockIcon, MailIcon, UserIcon } from "lucide-react"
+import {
+  EyeIcon,
+  EyeOffIcon,
+  LockIcon,
+  MailIcon,
+  ShieldCheckIcon,
+  UserIcon,
+  UserRoundIcon,
+  UsersRoundIcon,
+} from "lucide-react"
 
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
@@ -25,6 +34,7 @@ export default function SignUpPage() {
     const email = String(formData.get("email") ?? "")
     const password = String(formData.get("password") ?? "")
     const confirmPassword = String(formData.get("confirmPassword") ?? "")
+    const accountType = String(formData.get("accountType") ?? "seeker")
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.")
@@ -38,6 +48,7 @@ export default function SignUpPage() {
         name,
         email,
         password,
+        accountType,
         callbackURL: "/",
       })
       if (authError) {
@@ -48,7 +59,10 @@ export default function SignUpPage() {
         })
         setError(authError.message || "Unable to create your account. Please try again.")
       } else {
-        console.log("Sign-up data:", { user: data?.user })
+        console.log("Sign-up data:", {
+          user: data?.user,
+          token: data?.token,
+        })
       }
     } catch (cause) {
       console.error("Sign-up request failed:", cause)
@@ -89,10 +103,38 @@ export default function SignUpPage() {
             Create your account
           </h1>
           <p className="mt-2 text-center [font-family:var(--font-manrope)] text-white/60">
-            Join HireLoop and land your next role faster.
+            Three minutes to set up. Matches start arriving today.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-medium text-white/80">
+                Joining HireLoop as
+              </legend>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { value: "seeker", label: "Job Seeker", Icon: UsersRoundIcon },
+                  { value: "recruiter", label: "Recruiter", Icon: UserRoundIcon },
+                  { value: "admin", label: "Admin", Icon: ShieldCheckIcon },
+                ].map(({ value, label, Icon }) => (
+                  <label key={value} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      name="accountType"
+                      value={value}
+                      defaultChecked={value === "seeker"}
+                      required
+                      className="peer sr-only"
+                    />
+                    <span className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 p-3 text-center text-sm font-semibold text-white/70 transition hover:bg-white/10 peer-checked:border-[#5c53fe] peer-checked:bg-[#5c53fe]/25 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-[#5c53fe]">
+                      <Icon aria-hidden="true" className="size-6" />
+                      {label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
             <div className="space-y-2">
               <Label htmlFor="name" className="text-white/80">
                 Full name
