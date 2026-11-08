@@ -7,18 +7,37 @@ import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import Image from "next/image"
+import { signIn } from "@/lib/auth-client"
 
 const fieldClass =
   "h-12 rounded-xl border-white/15 bg-[#101010] pl-11 text-white [font-family:var(--font-satoshi)] placeholder:text-white/50 focus-visible:border-[#5c53fe] focus-visible:ring-[#5c53fe]/30 dark:bg-[#101010]"
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState("")
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const data = Object.fromEntries(new FormData(e.currentTarget))
-    // TODO: connect to auth (auth-client.ts) later
-    console.log("sign-in form data:", data)
+    const formData = new FormData(e.currentTarget)
+    const email = String(formData.get("email") ?? "")
+    const password = String(formData.get("password") ?? "")
+
+    setError("")
+    setIsSubmitting(true)
+    try {
+      const result = await signIn.email({ email, password, callbackURL: "/" })
+      if (result.error) {
+        setError(result.error.message ?? "Unable to sign in. Please try again.")
+      } else {
+        console.log("Sign-in data:", { user: result.data?.user })
+      }
+    } catch {
+      setError("Unable to sign in. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -32,16 +51,24 @@ export default function SignInPage() {
       <div className="w-full max-w-[440px]">
         <Link
           href="/"
-          className="mb-8 block text-center text-3xl font-bold tracking-tight text-white [font-family:var(--font-manrope)]"
+          aria-label="HireLoop home"
+          className="relative mx-auto mb-8 block h-10 w-[154px]"
         >
-          hire<span className="text-[#5c53fe]">loop</span>
+          <Image
+            src="/hireloop-logo.png"
+            alt="HireLoop"
+            fill
+            sizes="154px"
+            priority
+            className="object-contain object-center"
+          />
         </Link>
 
         <div className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,#0b0b0c,#181819)] p-8">
-          <h1 className="text-center text-3xl font-bold text-white [font-family:var(--font-manrope)]">
+          <h1 className="text-center [font-family:var(--font-manrope)] text-3xl font-bold text-white">
             Welcome back
           </h1>
-          <p className="mt-2 text-center text-white/60 [font-family:var(--font-manrope)]">
+          <p className="mt-2 text-center [font-family:var(--font-manrope)] text-white/60">
             Sign in to continue your job search.
           </p>
 
@@ -102,15 +129,18 @@ export default function SignInPage() {
               </div>
             </div>
 
+            {error && <p role="alert" className="text-sm text-red-400">{error}</p>}
+
             <Button
               type="submit"
+              disabled={isSubmitting}
               className="h-12 w-full rounded-xl bg-[#5c53fe] text-base font-semibold text-white hover:bg-[#4f47e8]"
             >
-              Sign in
+              {isSubmitting ? "Signing in…" : "Sign in"}
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-white/60 [font-family:var(--font-manrope)]">
+          <p className="mt-6 text-center [font-family:var(--font-manrope)] text-sm text-white/60">
             Don&apos;t have an account?{" "}
             <Link
               href="/sign-up"

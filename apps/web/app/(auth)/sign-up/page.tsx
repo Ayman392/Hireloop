@@ -2,17 +2,13 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import {
-  EyeIcon,
-  EyeOffIcon,
-  LockIcon,
-  MailIcon,
-  UserIcon,
-} from "lucide-react"
+import { EyeIcon, EyeOffIcon, LockIcon, MailIcon, UserIcon } from "lucide-react"
 
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import Image from "next/image"
+import { authClient } from "@/lib/auth-client"
 
 const fieldClass =
   "h-12 rounded-xl border-white/15 bg-[#101010] pl-11 text-white [font-family:var(--font-satoshi)] placeholder:text-white/50 focus-visible:border-[#5c53fe] focus-visible:ring-[#5c53fe]/30 dark:bg-[#101010]"
@@ -20,19 +16,48 @@ const fieldClass =
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const data = Object.fromEntries(new FormData(e.currentTarget))
+    const formData = new FormData(e.currentTarget)
+    const name = String(formData.get("name") ?? "")
+    const email = String(formData.get("email") ?? "")
+    const password = String(formData.get("password") ?? "")
+    const confirmPassword = String(formData.get("confirmPassword") ?? "")
 
-    if (data.password !== data.confirmPassword) {
+    if (password !== confirmPassword) {
       setError("Passwords do not match.")
       return
     }
 
     setError("")
-    // TODO: connect to auth (auth-client.ts) later
-    console.log("sign-up form data:", data)
+    setIsSubmitting(true)
+    try {
+      const { data, error: authError } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+        callbackURL: "/",
+      })
+      if (authError) {
+        console.log("Sign-up failed:", {
+          status: authError.status,
+          statusText: authError.statusText,
+          message: authError.message,
+        })
+        setError(authError.message || "Unable to create your account. Please try again.")
+      } else {
+        console.log("Sign-up data:", { user: data?.user })
+      }
+    } catch (cause) {
+      console.error("Sign-up request failed:", cause)
+      setError(cause instanceof Error && cause.message
+        ? cause.message
+        : "Unable to create your account. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -46,16 +71,24 @@ export default function SignUpPage() {
       <div className="w-full max-w-[440px]">
         <Link
           href="/"
-          className="mb-8 block text-center text-3xl font-bold tracking-tight text-white [font-family:var(--font-manrope)]"
+          aria-label="HireLoop home"
+          className="relative mx-auto mb-8 block h-10 w-[154px]"
         >
-          hire<span className="text-[#5c53fe]">loop</span>
+          <Image
+            src="/hireloop-logo.png"
+            alt="HireLoop"
+            fill
+            sizes="154px"
+            priority
+            className="object-contain object-center"
+          />
         </Link>
 
         <div className="rounded-2xl border border-white/10 bg-[linear-gradient(180deg,#0b0b0c,#181819)] p-8">
-          <h1 className="text-center text-3xl font-bold text-white [font-family:var(--font-manrope)]">
+          <h1 className="text-center [font-family:var(--font-manrope)] text-3xl font-bold text-white">
             Create your account
           </h1>
-          <p className="mt-2 text-center text-white/60 [font-family:var(--font-manrope)]">
+          <p className="mt-2 text-center [font-family:var(--font-manrope)] text-white/60">
             Join HireLoop and land your next role faster.
           </p>
 
@@ -143,11 +176,6 @@ export default function SignUpPage() {
                   className={fieldClass}
                 />
               </div>
-              {error && (
-                <p role="alert" className="text-sm text-red-400">
-                  {error}
-                </p>
-              )}
             </div>
 
             <label className="flex items-start gap-3 text-sm text-white/60">
@@ -170,15 +198,22 @@ export default function SignUpPage() {
               </span>
             </label>
 
+            {error && (
+              <p role="alert" className="text-sm text-red-400">
+                {error}
+              </p>
+            )}
+
             <Button
               type="submit"
+              disabled={isSubmitting}
               className="h-12 w-full rounded-xl bg-[#5c53fe] text-base font-semibold text-white hover:bg-[#4f47e8]"
             >
-              Create account
+              {isSubmitting ? "Creating account..." : "Create account"}
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-white/60 [font-family:var(--font-manrope)]">
+          <p className="mt-6 text-center [font-family:var(--font-manrope)] text-sm text-white/60">
             Already have an account?{" "}
             <Link
               href="/sign-in"
