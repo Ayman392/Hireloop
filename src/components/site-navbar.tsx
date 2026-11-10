@@ -16,15 +16,19 @@ import {
 import { cn } from "@workspace/ui/lib/utils"
 import { authClient, useSession } from "@/lib/auth-client"
 
-const navLinks = [
-  { label: "Browse Jobs", href: "#browse-jobs" },
-  { label: "Company", href: "#company" },
-  { label: "Pricing", href: "#pricing" },
-]
-
 export function SiteNavbar() {
   const [menuOpen, setMenuOpen] = React.useState(false)
   const { data: session } = useSession()
+
+  const navLinks = [
+    { label: "Browse Jobs", href: "#browse-jobs" },
+    { label: "Company", href: "#company" },
+    { label: "Pricing", href: "#pricing" },
+    {
+      label: "Dashboard",
+      href: `/dashboard/${session?.user?.role ?? "seeker"}`,
+    },
+  ] as const
 
   return (
     <header className="sticky top-0 z-40 w-full px-6 pt-6">

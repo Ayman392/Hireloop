@@ -7,7 +7,6 @@ import {
   EyeOffIcon,
   LockIcon,
   MailIcon,
-  ShieldCheckIcon,
   UserIcon,
   UserRoundIcon,
   UsersRoundIcon,
@@ -34,7 +33,9 @@ export default function SignUpPage() {
     const email = String(formData.get("email") ?? "")
     const password = String(formData.get("password") ?? "")
     const confirmPassword = String(formData.get("confirmPassword") ?? "")
-    const accountType = String(formData.get("accountType") ?? "seeker")
+    const role = String(formData.get("accountType") ?? "seeker") as
+      | "seeker"
+      | "recruiter"
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.")
@@ -48,7 +49,7 @@ export default function SignUpPage() {
         name,
         email,
         password,
-        accountType,
+        role,
         callbackURL: "/",
       })
       if (authError) {
@@ -117,7 +118,7 @@ export default function SignUpPage() {
               <legend className="text-sm font-medium text-white/80">
                 Joining HireLoop as
               </legend>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {[
                   {
                     value: "seeker",
@@ -129,7 +130,6 @@ export default function SignUpPage() {
                     label: "Recruiter",
                     Icon: UserRoundIcon,
                   },
-                  { value: "admin", label: "Admin", Icon: ShieldCheckIcon },
                 ].map(({ value, label, Icon }) => (
                   <label key={value} className="cursor-pointer">
                     <input

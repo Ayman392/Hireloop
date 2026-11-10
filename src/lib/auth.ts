@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth"
 import { randomBytes } from "node:crypto"
 import { MongoClient } from "mongodb"
 import { mongodbAdapter } from "@better-auth/mongo-adapter"
+import { z } from "zod"
 
 const databaseUri = process.env.BETTER_AUTH_DB_URI
 if (!databaseUri) {
@@ -23,6 +24,9 @@ export const auth = betterAuth({
         type: ["seeker", "recruiter", "admin"],
         required: true,
         defaultValue: "seeker",
+        validator: {
+          input: z.enum(["seeker", "recruiter"]),
+        },
       },
     },
   },
