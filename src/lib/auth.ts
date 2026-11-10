@@ -5,7 +5,9 @@ import { mongodbAdapter } from "@better-auth/mongo-adapter"
 
 const databaseUri = process.env.BETTER_AUTH_DB_URI
 if (!databaseUri) {
-  throw new Error("Missing BETTER_AUTH_DB_URI. Set it in the workspace root .env or apps/web/.env.local.")
+  throw new Error(
+    "Missing BETTER_AUTH_DB_URI. Set it in the workspace root .env or apps/web/.env.local."
+  )
 }
 
 const client = new MongoClient(databaseUri)
@@ -17,26 +19,19 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
-      accountType: {
-        type: "string",
+      role: {
+        type: ["seeker", "recruiter", "admin"],
         required: true,
         defaultValue: "seeker",
       },
-      userKey: {
-        type: ['seeker','recuiter','admin'],
-        required: true,
-        input: false,
-        returned: false,
-        defaultValue: () => randomBytes(32).toString("hex"),
-      },
     },
   },
-      socialProviders: {
-        google: { 
-            clientId: process.env.GOOGLE_CLIENT_ID as string, 
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
-        }, 
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
+  },
   database: mongodbAdapter(db, {
     client,
   }),
