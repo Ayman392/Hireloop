@@ -20,11 +20,12 @@ import {
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Textarea } from "@workspace/ui/components/textarea"
+import { createJob } from "@/lib/actions/jobs"
 
 type JobType = "full-time" | "part-time" | "contract" | "internship"
 type PayFrequency = "hour" | "month" | "year"
 
-type JobFormData = {
+export type JobFormData = {
   title: string
   companyName: string
   category: string
@@ -63,8 +64,9 @@ function readOptionalNumber(value: FormDataEntryValue | null) {
 export function NewJobForm() {
   const [error, setError] = useState<string | null>(null)
   const [collectedJob, setCollectedJob] = useState<JobFormData | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
 
@@ -77,7 +79,9 @@ export function NewJobForm() {
       maximumRate !== null &&
       maximumRate < minimumRate
     ) {
-      setError("Maximum rate must be greater than or equal to the minimum rate.")
+      setError(
+        "Maximum rate must be greater than or equal to the minimum rate."
+      )
       return
     }
 
@@ -92,12 +96,22 @@ export function NewJobForm() {
         String(formData.get("applicationDeadline") ?? "") || null,
       minimumRate,
       maximumRate,
-      payFrequency: String(formData.get("payFrequency") ?? "year") as PayFrequency,
+      payFrequency: String(
+        formData.get("payFrequency") ?? "year"
+      ) as PayFrequency,
       responsibilities: String(formData.get("responsibilities") ?? "").trim(),
       qualifications: String(formData.get("qualifications") ?? "").trim(),
     }
 
-    setCollectedJob(job)
+    setIsSubmitting(true)
+    try {
+      await createJob(job)
+      setCollectedJob(job)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to publish this job.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -121,17 +135,19 @@ export function NewJobForm() {
             Post a New Job
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
-            Fill in the position details to attract qualified talent across our network.
+            Fill in the position details to attract qualified talent across our
+            network.
           </p>
         </div>
 
         <Button
           type="submit"
           form="new-job-form"
+          disabled={isSubmitting}
           className="h-10 gap-2 bg-[#6258f5] px-4 text-white hover:bg-[#7067ff]"
         >
           <Send className="size-4" aria-hidden="true" />
-          Publish Job
+          {isSubmitting ? "Publishing…" : "Publish Job"}
         </Button>
       </div>
 
@@ -192,7 +208,9 @@ export function NewJobForm() {
                   <option value="" disabled>
                     Select a category
                   </option>
-                  <option value="engineering-tech">Engineering &amp; Tech</option>
+                  <option value="engineering-tech">
+                    Engineering &amp; Tech
+                  </option>
                   <option value="design">Design</option>
                   <option value="marketing">Marketing</option>
                   <option value="sales">Sales</option>
@@ -217,7 +235,7 @@ export function NewJobForm() {
                       defaultChecked={index === 0}
                       className="peer sr-only"
                     />
-                    <span className="flex h-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.025] px-3 text-sm text-white/65 transition hover:bg-white/[0.06] peer-checked:border-[#6258f5]/70 peer-checked:bg-[#6258f5]/15 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-[#8c85ff]">
+                    <span className="flex h-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.025] px-3 text-sm text-white/65 transition peer-checked:border-[#6258f5]/70 peer-checked:bg-[#6258f5]/15 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-[#8c85ff] hover:bg-white/[0.06]">
                       {jobType.label}
                     </span>
                   </label>
@@ -244,7 +262,10 @@ export function NewJobForm() {
           <CardContent className="space-y-5 px-5 py-5 sm:px-6 sm:py-6">
             <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.025] px-4 py-3.5">
               <span className="flex items-start gap-3">
-              <Globe className="mt-0.5 size-4 text-[#a7a1ff]" aria-hidden="true" />
+                <Globe
+                  className="mt-0.5 size-4 text-[#a7a1ff]"
+                  aria-hidden="true"
+                />
                 <span>
                   <span className="block text-sm font-medium text-white/85">
                     Remote work allowed
@@ -384,7 +405,8 @@ export function NewJobForm() {
 
             <div className="space-y-2">
               <Label htmlFor="qualifications" className="text-white/75">
-                Qualifications &amp; requirements <span className="text-[#a7a1ff]">*</span>
+                Qualifications &amp; requirements{" "}
+                <span className="text-[#a7a1ff]">*</span>
               </Label>
               <Textarea
                 id="qualifications"
@@ -412,13 +434,17 @@ export function NewJobForm() {
             className="gap-2 border border-emerald-400/20 bg-emerald-400/[0.07] py-4 text-white shadow-none ring-0"
           >
             <CardHeader className="flex flex-row items-center gap-3 px-5 py-0 sm:px-6">
-              <BriefcaseBusiness className="size-5 text-emerald-300" aria-hidden="true" />
+              <BriefcaseBusiness
+                className="size-5 text-emerald-300"
+                aria-hidden="true"
+              />
               <div>
                 <CardTitle className="text-sm font-semibold text-white">
-                  Job details collected
+                  Job published
                 </CardTitle>
                 <p className="mt-1 text-xs text-white/60">
-                  {collectedJob.title} | {collectedJob.companyName} | {collectedJob.location}
+                  {collectedJob.title} | {collectedJob.companyName} |{" "}
+                  {collectedJob.location}
                 </p>
               </div>
             </CardHeader>
@@ -432,7 +458,7 @@ export function NewJobForm() {
                 </pre>
               </details>
               <p className="mt-3 text-xs text-white/45">
-                This form currently keeps the submitted data in page state; it is not saved to the database yet.
+                Your listing has been saved and is ready for review.
               </p>
             </CardContent>
           </Card>
