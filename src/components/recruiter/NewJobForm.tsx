@@ -3,7 +3,6 @@
 import { useState, type FormEvent } from "react"
 import Link from "next/link"
 import {
-  BriefcaseBusiness,
   ChevronRight,
   Globe,
   MapPin,
@@ -21,6 +20,7 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { createJob } from "@/lib/actions/jobs"
+import { useRouter } from "next/navigation"
 
 type JobType = "full-time" | "part-time" | "contract" | "internship"
 type PayFrequency = "hour" | "month" | "year"
@@ -62,8 +62,8 @@ function readOptionalNumber(value: FormDataEntryValue | null) {
 }
 
 export function NewJobForm() {
+  const router = useRouter()
   const [error, setError] = useState<string | null>(null)
-  const [collectedJob, setCollectedJob] = useState<JobFormData | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -71,6 +71,23 @@ export function NewJobForm() {
     setError(null)
 
     const formData = new FormData(event.currentTarget)
+    const requiredFields = [
+      ["Job title", formData.get("title")],
+      ["Company name", formData.get("companyName")],
+      ["Job category", formData.get("category")],
+      ["Job location", formData.get("location")],
+      ["Key responsibilities", formData.get("responsibilities")],
+      ["Qualifications", formData.get("qualifications")],
+    ] as const
+    const missingField = requiredFields.find(
+      ([, value]) => !String(value ?? "").trim()
+    )?.[0]
+
+    if (missingField) {
+      setError(`Please complete the required field: ${missingField}.`)
+      return
+    }
+
     const minimumRate = readOptionalNumber(formData.get("minimumRate"))
     const maximumRate = readOptionalNumber(formData.get("maximumRate"))
 
@@ -106,9 +123,11 @@ export function NewJobForm() {
     setIsSubmitting(true)
     try {
       await createJob(job)
-      setCollectedJob(job)
+      router.push("/dashboard/recruiter/jobs")
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to publish this job.")
+      setError(
+        cause instanceof Error ? cause.message : "Unable to publish this job."
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -151,7 +170,21 @@ export function NewJobForm() {
         </Button>
       </div>
 
-      <form id="new-job-form" onSubmit={handleSubmit} className="space-y-5">
+      {error && (
+        <p
+          role="alert"
+          className="mb-5 rounded-lg border border-red-400/25 bg-red-400/10 px-4 py-3 text-sm text-red-200"
+        >
+          {error}
+        </p>
+      )}
+
+      <form
+        id="new-job-form"
+        onSubmit={handleSubmit}
+        noValidate
+        className="space-y-5"
+      >
         <Card className="gap-0 border border-white/10 bg-[#111113] py-0 text-white shadow-none ring-0">
           <CardHeader className="flex flex-row items-center gap-3 border-b border-white/8 px-5 py-4 sm:px-6">
             <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#6258f5]/15 text-xs font-semibold text-[#a7a1ff]">
@@ -419,50 +452,6 @@ export function NewJobForm() {
           </CardContent>
         </Card>
 
-        {error && (
-          <p
-            role="alert"
-            className="rounded-lg border border-red-400/25 bg-red-400/10 px-4 py-3 text-sm text-red-200"
-          >
-            {error}
-          </p>
-        )}
-
-        {collectedJob && (
-          <Card
-            role="status"
-            className="gap-2 border border-emerald-400/20 bg-emerald-400/[0.07] py-4 text-white shadow-none ring-0"
-          >
-            <CardHeader className="flex flex-row items-center gap-3 px-5 py-0 sm:px-6">
-              <BriefcaseBusiness
-                className="size-5 text-emerald-300"
-                aria-hidden="true"
-              />
-              <div>
-                <CardTitle className="text-sm font-semibold text-white">
-                  Job published
-                </CardTitle>
-                <p className="mt-1 text-xs text-white/60">
-                  {collectedJob.title} | {collectedJob.companyName} |{" "}
-                  {collectedJob.location}
-                </p>
-              </div>
-            </CardHeader>
-            <CardContent className="px-5 pt-2 sm:px-6">
-              <details className="text-xs text-white/65">
-                <summary className="w-fit cursor-pointer select-none hover:text-white">
-                  View collected data
-                </summary>
-                <pre className="mt-3 overflow-x-auto rounded-lg bg-black/30 p-3 text-[11px] leading-5 text-white/75">
-                  {JSON.stringify(collectedJob, null, 2)}
-                </pre>
-              </details>
-              <p className="mt-3 text-xs text-white/45">
-                Your listing has been saved and is ready for review.
-              </p>
-            </CardContent>
-          </Card>
-        )}
       </form>
     </div>
   )
