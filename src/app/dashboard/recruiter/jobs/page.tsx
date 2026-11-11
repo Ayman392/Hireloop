@@ -1,14 +1,10 @@
-import React from "react"
+import { ManageJobs } from "@/components/recruiter/ManageJobs"
 import { requireDashboardRole } from "@/lib/dashboard-auth"
 
 const ManageJobsPage = async () => {
   await requireDashboardRole("recruiter")
 
-  return (
-    <div>
-      <h2>Manage Jobs</h2>
-    </div>
-  )
+  return <ManageJobs />
 }
 
 export default ManageJobsPage
