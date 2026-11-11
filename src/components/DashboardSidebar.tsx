@@ -73,14 +73,8 @@ const menuItemsByRole: Record<Role, MenuItem[]> = {
       icon: LayoutDashboard,
     },
     {
-      id: "recruiter-jobs",
-      name: "My jobs",
-      url: "/dashboard/recruiter/jobs",
-      icon: ClipboardList,
-    },
-    {
       id: "requiter-my-company",
-      name: "My Company",
+      name: "Manage Jobs",
       url: "/dashboard/recruiter/jobs",
       icon: BriefcaseBusiness,
     },
