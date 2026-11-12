@@ -162,14 +162,22 @@ export async function getJobs(query = ""): Promise<JobListing[]> {
 
   const filters = new URLSearchParams(query)
   const category = filters.get("category")?.trim().toLowerCase()
-  const jobType = filters.get("job-type")?.trim().toLowerCase()
-  const remote = filters.get("isRemote")?.trim().toLowerCase()
+  const jobType = (filters.get("jobType") ?? filters.get("job-type"))
+    ?.trim()
+    .toLowerCase()
+  const remoteValues = filters.getAll("remoteAllowed")
+  const remote = (remoteValues.length ? remoteValues : filters.getAll("isRemote"))
+    .map((value) => value.trim().toLowerCase())
 
   return jobs.filter((job) => {
     if (category && job.category.toLowerCase() !== category) return false
     if (jobType && job.jobType.toLowerCase() !== jobType) return false
-    if (remote === "true" && !job.remoteAllowed) return false
-    if (remote === "false" && job.remoteAllowed) return false
+    if (remote.length === 1 && remote[0] === "true" && !job.remoteAllowed) {
+      return false
+    }
+    if (remote.length === 1 && remote[0] === "false" && job.remoteAllowed) {
+      return false
+    }
     return true
   })
 }

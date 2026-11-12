@@ -20,7 +20,13 @@ function formatPay(job: JobListing) {
   return `${range}${frequency}`
 }
 
-export function JobCard({ job }: { job: JobListing }) {
+export function JobCard({
+  job,
+  onViewDetails,
+}: {
+  job: JobListing
+  onViewDetails: (jobId: string) => void
+}) {
   const pay = formatPay(job)
   const initials = job.companyName
     .split(/\s+/)
@@ -30,7 +36,19 @@ export function JobCard({ job }: { job: JobListing }) {
     .toUpperCase()
 
   return (
-    <article className="flex gap-3.5 rounded-xl border border-white/[0.06] bg-[#131316] p-4 transition-colors hover:border-white/[0.12] sm:gap-4 sm:p-5">
+    <article
+      role="link"
+      tabIndex={0}
+      aria-label={`View ${job.title} details`}
+      onClick={() => onViewDetails(job.id)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault()
+          onViewDetails(job.id)
+        }
+      }}
+      className="flex cursor-pointer gap-3.5 rounded-xl border border-white/[0.06] bg-[#131316] p-4 transition-colors hover:border-white/[0.12] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6258f5] sm:gap-4 sm:p-5"
+    >
       <div
         aria-hidden="true"
         className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-white/[0.06] bg-[#1d1d21] text-xs font-semibold text-white/65"
@@ -54,6 +72,7 @@ export function JobCard({ job }: { job: JobListing }) {
           <button
             aria-label={`Save ${job.title}`}
             className="-mr-1 -mt-1 rounded-md p-1.5 text-white/45 transition-colors hover:bg-white/[0.06] hover:text-white"
+            onClick={(event) => event.stopPropagation()}
             type="button"
           >
             <Bookmark aria-hidden="true" className="size-4" />
