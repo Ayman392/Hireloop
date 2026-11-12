@@ -9,6 +9,7 @@ type JobStatus = "Active" | "Ended"
 
 export type JobListing = JobFormData & {
   id: string
+  _id: string
   department: string
   status: JobStatus
   applicants: number
@@ -113,12 +114,12 @@ function normalizeJob(value: unknown, index: number): JobListing | null {
     : typeof job.applicants === "number"
       ? job.applicants
       : 0
-  const id =
-    job.id ?? job._id?.toString() ?? `${job.title}-${index}`
+  const id = job.id ?? job._id?.toString() ?? `${job.title}-${index}`
   const postedAt = job.createdAt ?? job.postedAt
 
   return {
     id,
+    _id: id,
     title: job.title,
     companyName: job.companyName,
     category,
@@ -140,7 +141,7 @@ function normalizeJob(value: unknown, index: number): JobListing | null {
   }
 }
 
-export async function getJobs(): Promise<JobListing[]> {
+export async function getJobs(query = ""): Promise<JobListing[]> {
   const session = await auth.api.getSession({
     headers: await headers(),
     query: { disableCookieCache: true },
@@ -155,7 +156,20 @@ export async function getJobs(): Promise<JobListing[]> {
     .sort({ createdAt: -1 })
     .toArray()
 
-  return records
+  const jobs = records
     .map(normalizeJob)
     .filter((job): job is JobListing => job !== null)
+
+  const filters = new URLSearchParams(query)
+  const category = filters.get("category")?.trim().toLowerCase()
+  const jobType = filters.get("job-type")?.trim().toLowerCase()
+  const remote = filters.get("isRemote")?.trim().toLowerCase()
+
+  return jobs.filter((job) => {
+    if (category && job.category.toLowerCase() !== category) return false
+    if (jobType && job.jobType.toLowerCase() !== jobType) return false
+    if (remote === "true" && !job.remoteAllowed) return false
+    if (remote === "false" && job.remoteAllowed) return false
+    return true
+  })
 }
