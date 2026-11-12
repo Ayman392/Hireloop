@@ -20,10 +20,13 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { createJob } from "@/lib/actions/jobs"
+import {
+  jobCategories,
+  jobTypes,
+  type JobType,
+  type PayFrequency,
+} from "@/lib/job-options"
 import { useRouter } from "next/navigation"
-
-type JobType = "full-time" | "part-time" | "contract" | "internship"
-type PayFrequency = "hour" | "month" | "year"
 
 export type JobFormData = {
   title: string
@@ -39,13 +42,6 @@ export type JobFormData = {
   responsibilities: string
   qualifications: string
 }
-
-const jobTypes: { value: JobType; label: string }[] = [
-  { value: "full-time", label: "Full-time" },
-  { value: "part-time", label: "Part-time" },
-  { value: "contract", label: "Contract" },
-  { value: "internship", label: "Internship" },
-]
 
 const fieldClassName =
   "h-11 border-white/10 bg-white/[0.04] text-white placeholder:text-white/35 focus-visible:border-[#7168ff] focus-visible:ring-[#7168ff]/25"
@@ -241,15 +237,11 @@ export function NewJobForm() {
                   <option value="" disabled>
                     Select a category
                   </option>
-                  <option value="engineering-tech">
-                    Engineering &amp; Tech
-                  </option>
-                  <option value="design">Design</option>
-                  <option value="marketing">Marketing</option>
-                  <option value="sales">Sales</option>
-                  <option value="finance">Finance</option>
-                  <option value="human-resources">Human Resources</option>
-                  <option value="other">Other</option>
+                  {jobCategories.map((category) => (
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

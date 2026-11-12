@@ -21,7 +21,7 @@ export function SiteNavbar() {
   const { data: session } = useSession()
 
   const navLinks = [
-    { label: "Browse Jobs", href: "#browse-jobs" },
+    { label: "Browse Jobs", href: "/browse-jobs" },
     { label: "Company", href: "#company" },
     { label: "Pricing", href: "#pricing" },
     {
