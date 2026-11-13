@@ -27,6 +27,11 @@ export function ApplyJobButton({
       setState("applied")
       setMessage("Your application has been submitted.")
     } catch (error) {
+      if (error instanceof ApplyToJobError && error.paymentRequired) {
+        window.location.assign("/payment")
+        return
+      }
+
       if (error instanceof ApplyToJobError && error.alreadyApplied) {
         setState("applied")
         setMessage(error.message)

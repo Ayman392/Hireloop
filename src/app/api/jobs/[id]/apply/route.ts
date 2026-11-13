@@ -97,6 +97,19 @@ export async function POST(
       )
     }
 
+    const applicationCount = await applications.countDocuments({
+      applicantId: session.user.id,
+    })
+    if (applicationCount >= 10) {
+      return Response.json(
+        {
+          error: "You have reached the free application limit.",
+          paymentRequired: true,
+        },
+        { status: 402 }
+      )
+    }
+
     const application: JobApplication = {
       _id: applicationId,
       jobId: id,

@@ -77,9 +77,8 @@ export async function getApplicationsForUser(
     process.env.API_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
     "http://localhost:5000"
-  const query = new URLSearchParams({ userId: applicantId })
   const response = await fetch(
-    `${apiBaseUrl.replace(/\/$/, "")}/applications?${query.toString()}`,
+    `${apiBaseUrl.replace(/\/$/, "")}/applications`,
     { cache: "no-store" }
   )
 

@@ -1,13 +1,15 @@
 type ApplyToJobResponse = {
   applied?: boolean
   error?: string
+  paymentRequired?: boolean
 }
 
 export class ApplyToJobError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly alreadyApplied: boolean
+    readonly alreadyApplied: boolean,
+    readonly paymentRequired: boolean
   ) {
     super(message)
     this.name = "ApplyToJobError"
@@ -27,7 +29,8 @@ export async function applyToJob(jobId: string): Promise<void> {
     throw new ApplyToJobError(
       result?.error ?? "Unable to submit your application.",
       response.status,
-      result?.applied === true
+      result?.applied === true,
+      result?.paymentRequired === true
     )
   }
 }
