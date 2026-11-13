@@ -2,6 +2,8 @@ import { MongoClient, ObjectId } from "mongodb"
 import { headers } from "next/headers"
 
 import { auth } from "@/lib/auth"
+import type { ApplicationStatus, JobApplication } from "@/lib/types/application"
+import type { JobType } from "@/lib/job-options"
 
 const databaseUri = process.env.BETTER_AUTH_DB_URI
 if (!databaseUri) {
@@ -10,16 +12,6 @@ if (!databaseUri) {
 
 const client = new MongoClient(databaseUri)
 const clientPromise = client.connect()
-
-type JobApplication = {
-  _id: string
-  jobId: string
-  applicantId: string
-  applicantName: string
-  applicantEmail: string
-  status: "submitted"
-  createdAt: string
-}
 
 export async function POST(
   _request: Request,
@@ -53,7 +45,18 @@ export async function POST(
     const jobs = database.collection("jobs")
     const job = await jobs.findOne(
       { _id: new ObjectId(id) },
-      { projection: { applicationDeadline: 1, status: 1 } }
+      {
+        projection: {
+          applicationDeadline: 1,
+          status: 1,
+          title: 1,
+          companyName: 1,
+          category: 1,
+          jobType: 1,
+          location: 1,
+          remoteAllowed: 1,
+        },
+      }
     )
 
     if (!job) {
@@ -97,11 +100,23 @@ export async function POST(
     const application: JobApplication = {
       _id: applicationId,
       jobId: id,
+      jobTitle: typeof job.title === "string" ? job.title : "Untitled job",
+      companyName:
+        typeof job.companyName === "string" ? job.companyName : "Company",
+      category: typeof job.category === "string" ? job.category : "other",
+      jobType: ["full-time", "part-time", "contract", "internship"].includes(
+        job.jobType
+      )
+        ? (job.jobType as JobType)
+        : "full-time",
+      location: typeof job.location === "string" ? job.location : "Not specified",
+      remoteAllowed: job.remoteAllowed === true,
       applicantId: session.user.id,
       applicantName: session.user.name,
       applicantEmail: session.user.email,
-      status: "submitted",
+      status: "Applied" satisfies ApplicationStatus,
       createdAt: new Date().toISOString(),
+      isArchived: false,
     }
     const apiBaseUrl =
       process.env.API_URL ||
