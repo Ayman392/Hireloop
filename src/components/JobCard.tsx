@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 
 import type { JobListing } from "@/lib/api/jobs"
+import { ApplyJobButton } from "@/components/jobs/ApplyJobButton"
 
 function getSalary(job: JobListing) {
   if (job.minimumRate === null && job.maximumRate === null) {
@@ -66,7 +67,13 @@ function DetailsSection({ title, content }: { title: string; content: string }) 
   )
 }
 
-export default function JobCard({ job }: { job: JobListing }) {
+export default function JobCard({
+  job,
+  userRole,
+}: {
+  job: JobListing
+  userRole: string | null
+}) {
   const companyInitials = job.companyName
     .split(/\s+/)
     .slice(0, 2)
@@ -110,12 +117,11 @@ export default function JobCard({ job }: { job: JobListing }) {
           >
             <Bookmark aria-hidden="true" className="size-4" />
           </button>
-          <button
-            type="button"
-            className="h-10 rounded-lg bg-white px-4 text-xs font-semibold text-[#111113] hover:bg-white/90"
-          >
-            Apply Now
-          </button>
+          <ApplyJobButton
+            jobId={job.id}
+            canApply={job.status === "Active"}
+            userRole={userRole}
+          />
         </div>
       </header>
 

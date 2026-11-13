@@ -23,11 +23,18 @@ export default function SignInPage() {
     const formData = new FormData(e.currentTarget)
     const email = String(formData.get("email") ?? "")
     const password = String(formData.get("password") ?? "")
+    const requestedCallback = new URLSearchParams(window.location.search).get(
+      "callbackURL"
+    )
+    const callbackURL =
+      requestedCallback?.startsWith("/") && !requestedCallback.startsWith("//")
+        ? requestedCallback
+        : "/"
 
     setError("")
     setIsSubmitting(true)
     try {
-      const result = await signIn.email({ email, password, callbackURL: "/" })
+      const result = await signIn.email({ email, password, callbackURL })
       if (result.error) {
         setError(result.error.message ?? "Unable to sign in. Please try again.")
       } else {

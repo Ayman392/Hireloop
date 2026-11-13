@@ -1,8 +1,6 @@
 import "server-only"
 
-import { MongoClient, type Document } from "mongodb"
-import { headers } from "next/headers"
-import { auth } from "@/lib/auth"
+import { MongoClient, ObjectId, type Document } from "mongodb"
 import type { JobFormData } from "@/components/recruiter/NewJobForm"
 
 type JobStatus = "Active" | "Ended"
@@ -22,6 +20,7 @@ type ApiJob = Partial<JobFormData> & {
   department?: string
   status?: string
   applicants?: number | unknown[]
+  applicationCount?: number
   createdAt?: string | Date
   postedAt?: string | Date
 }
@@ -109,11 +108,14 @@ function normalizeJob(value: unknown, index: number): JobListing | null {
   )
     ? (job.payFrequency as JobFormData["payFrequency"])
     : "year"
-  const applicants = Array.isArray(job.applicants)
-    ? job.applicants.length
-    : typeof job.applicants === "number"
-      ? job.applicants
-      : 0
+  const applicants =
+    typeof job.applicationCount === "number"
+      ? job.applicationCount
+      : Array.isArray(job.applicants)
+        ? job.applicants.length
+        : typeof job.applicants === "number"
+          ? job.applicants
+          : 0
   const id = job.id ?? job._id?.toString() ?? `${job.title}-${index}`
   const postedAt = job.createdAt ?? job.postedAt
 
@@ -141,13 +143,19 @@ function normalizeJob(value: unknown, index: number): JobListing | null {
   }
 }
 
-export async function getJobs(query = ""): Promise<JobListing[]> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-    query: { disableCookieCache: true },
-  })
-  if (!session || session.user.role !== "recruiter") return []
+export async function getJobById(jobId: string): Promise<JobListing | null> {
+  if (!ObjectId.isValid(jobId)) return null
 
+  const client = await getMongoClient()
+  const record = await client
+    .db("hireloopdb")
+    .collection<Document>("jobs")
+    .findOne({ _id: new ObjectId(jobId) })
+
+  return normalizeJob(record, 0)
+}
+
+export async function getJobs(query = ""): Promise<JobListing[]> {
   const client = await getMongoClient()
   const records = await client
     .db("hireloopdb")
