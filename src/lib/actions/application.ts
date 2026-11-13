@@ -31,3 +31,24 @@ export async function applyToJob(jobId: string): Promise<void> {
     )
   }
 }
+
+export async function getApplicationCount(userId: string): Promise<number> {
+  const apiBaseUrl =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  const query = new URLSearchParams({ userId })
+  const response = await fetch(
+    `${apiBaseUrl.replace(/\/$/, "")}/applications/count?${query.toString()}`,
+    { cache: "no-store" }
+  )
+
+  if (!response.ok) {
+    throw new Error("Unable to load the application count.")
+  }
+
+  const count: unknown = await response.json()
+  if (typeof count !== "number" || !Number.isFinite(count)) {
+    throw new Error("The application count response is invalid.")
+  }
+
+  return count
+}
