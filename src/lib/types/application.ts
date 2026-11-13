@@ -7,6 +7,7 @@ export type ApplicationStatus =
   | "Interview"
   | "Offered"
   | "Rejected"
+  | "Withdrawn"
 
 export type JobApplication = {
   _id: string

@@ -34,4 +34,6 @@ export async function requireDashboardRole(requiredRole: DashboardRole) {
         : dashboardPathByRole.seeker
     )
   }
+
+  return session
 }
